@@ -3,44 +3,51 @@ import cors from 'cors';
 import { MongoClient } from 'mongodb';
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
-app.use(cors());
+// Obtén la URI desde la variable de entorno
+const uri = process.env.MONGO_URI;
 
-// URI de MongoDB Atlas
-const uri = 'mongodb+srv://pablolara:PeUlKWpeOYXeJTmT@prueba1.puvcqaj.mongodb.net/?retryWrites=true&w=majority';
-const client = new MongoClient(uri, {
-  // Ya no necesitas `useNewUrlParser` ni `useUnifiedTopology`
-});
+if (!uri) {
+  console.error('❌ No se encontró la variable de entorno MONGO_URI');
+  process.exit(1);
+}
 
-await client.connect(); // Conexión una vez, al inicio
-console.log('✅ Conectado a MongoDB');
+const client = new MongoClient(uri);
 
-const db = client.db('rutvans_chofer'); // Nombre de tu base de datos
-
-// Ruta dinámica que recibe ?coleccion=nombre
-app.get('/datos', async (req, res) => {
+async function main() {
   try {
-    const nombreColeccion = req.query.coleccion;
-    if (!nombreColeccion) {
-      return res.status(400).json({ error: 'Falta el parámetro "coleccion"' });
-    }
+    await client.connect();
+    console.log('✅ Conectado a MongoDB');
 
-    const coleccion = db.collection(nombreColeccion);
-    const datos = await coleccion.find({}).toArray();
+    const db = client.db('rutvans_chofer');
 
-    res.json(datos);
-  } catch (error) {
-    console.error('❌ Error al obtener datos:', error);
-    res.status(500).json({ error: 'Error interno del servidor' });
+    app.use(cors());
+
+    app.get('/datos', async (req, res) => {
+      try {
+        const nombreColeccion = req.query.coleccion;
+        if (!nombreColeccion) {
+          return res.status(400).json({ error: 'Falta el parámetro "coleccion"' });
+        }
+
+        const coleccion = db.collection(nombreColeccion);
+        const datos = await coleccion.find({}).toArray();
+
+        res.json(datos);
+      } catch (error) {
+        console.error('❌ Error al obtener datos:', error);
+        res.status(500).json({ error: 'Error interno del servidor' });
+      }
+    });
+
+    app.listen(PORT, () => {
+      console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
+    });
+  } catch (e) {
+    console.error('❌ Error conectando a MongoDB:', e);
+    process.exit(1);
   }
-});
+}
 
-app.listen(PORT, () => {
-  console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
-});
-
-
-
-
-
+main();
