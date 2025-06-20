@@ -3,22 +3,21 @@ import cors from 'cors';
 import { MongoClient } from 'mongodb';
 
 const app = express();
-const PORT = 3000;
+
+// Usa el puerto de Render o 3000 localmente
+const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 
-// URI de MongoDB Atlas
-const uri = 'mongodb+srv://pablolara:PeUlKWpeOYXeJTmT@prueba1.puvcqaj.mongodb.net/?retryWrites=true&w=majority';
-const client = new MongoClient(uri, {
-  // Ya no necesitas `useNewUrlParser` ni `useUnifiedTopology`
-});
+// URI de MongoDB Atlas, mejor usar variable de entorno en producción
+const uri = process.env.MONGO_URI || 'mongodb+srv://pablolara:PeUlKWpeOYXeJTmT@prueba1.puvcqaj.mongodb.net/?retryWrites=true&w=majority';
+const client = new MongoClient(uri);
 
-await client.connect(); // Conexión una vez, al inicio
+await client.connect();
 console.log('✅ Conectado a MongoDB');
 
-const db = client.db('rutvans_chofer'); // Nombre de tu base de datos
+const db = client.db('rutvans_chofer');
 
-// Ruta dinámica que recibe ?coleccion=nombre
 app.get('/datos', async (req, res) => {
   try {
     const nombreColeccion = req.query.coleccion;
@@ -26,8 +25,11 @@ app.get('/datos', async (req, res) => {
       return res.status(400).json({ error: 'Falta el parámetro "coleccion"' });
     }
 
+    // Si envías filtro, úsalo; si no, vacío
+    const filtro = req.query.filtro ? JSON.parse(req.query.filtro) : {};
+
     const coleccion = db.collection(nombreColeccion);
-    const datos = await coleccion.find({}).toArray();
+    const datos = await coleccion.find(filtro).toArray();
 
     res.json(datos);
   } catch (error) {
@@ -39,8 +41,3 @@ app.get('/datos', async (req, res) => {
 app.listen(PORT, () => {
   console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
 });
-
-
-
-
-
