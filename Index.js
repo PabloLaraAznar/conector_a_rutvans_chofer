@@ -5,8 +5,6 @@ import { MongoClient } from 'mongodb';
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-
-
 // Obtén la URI desde la variable de entorno
 const uri = process.env.MONGO_URI;
 
