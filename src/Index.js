@@ -5,6 +5,8 @@ import { MongoClient } from 'mongodb';
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+
+
 // Obtén la URI desde la variable de entorno
 const uri = process.env.MONGO_URI;
 
@@ -41,13 +43,16 @@ async function main() {
       }
     });
 
-    app.listen(PORT, () => {
-      console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
-    });
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 Servidor corriendo en http://0.0.0.0:${PORT}`);
+  });
   } catch (e) {
     console.error('❌ Error conectando a MongoDB:', e);
     process.exit(1);
   }
 }
+
+
+
 
 main();
