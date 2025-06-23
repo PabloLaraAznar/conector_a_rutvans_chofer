@@ -86,19 +86,19 @@ async function main() {
       }
     });
 
-        // POST - Login por correo y contraseña
+        // POST - Login por email y contraseña
     app.post('/login', async (req, res) => {
       try {
-        const { correo, password } = req.body;
+        const { email, password } = req.body;
 
-        if (!correo || !password) {
-          return res.status(400).json({ error: 'Correo y contraseña requeridos' });
+        if (!email || !password) {
+          return res.status(400).json({ error: 'email y contraseña requeridos' });
         }
 
         console.log('➡️ Cuerpo recibido en /login:', req.body);
 
         const coleccion = db.collection('users');
-        const usuario = await coleccion.findOne({ correo, password });
+        const usuario = await coleccion.findOne({ email, password });
 
         if (!usuario) {
           return res.status(401).json({ error: 'Credenciales incorrectas' });
