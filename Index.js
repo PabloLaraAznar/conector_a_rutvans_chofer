@@ -5,7 +5,7 @@ import { MongoClient, ObjectId } from 'mongodb';
 const app = express();
 const PORT = process.env.PORT || 3000;
 app.use(cors());
-app.use(express.json()); // ✅ Para leer JSON en POST/PUT
+app.use(express.json());
 
 const uri = process.env.MONGO_URI;
 
@@ -23,7 +23,7 @@ async function main() {
 
     const db = client.db('rutvans_chofer');
 
-    // ✅ GET - Obtener documentos
+    // GET - Obtener documentos
     app.get('/datos', async (req, res) => {
       try {
         const nombreColeccion = req.query.coleccion;
@@ -31,7 +31,13 @@ async function main() {
           return res.status(400).json({ error: 'Falta el parámetro "coleccion"' });
         }
 
-        const filtro = req.query.filtro ? JSON.parse(req.query.filtro) : {};
+        let filtro = req.query.filtro ? JSON.parse(req.query.filtro) : {};
+
+        // Convertir id string a ObjectId si existe
+        if (filtro._id && typeof filtro._id === 'string') {
+          filtro._id = new ObjectId(filtro._id);
+        }
+
         const coleccion = db.collection(nombreColeccion);
         const datos = await coleccion.find(filtro).toArray();
 
@@ -42,7 +48,7 @@ async function main() {
       }
     });
 
-    // ✅ POST - Insertar nuevo documento
+    // POST - Insertar nuevo documento (sin cambios)
     app.post('/datos', async (req, res) => {
       try {
         const nombreColeccion = req.query.coleccion;
@@ -60,7 +66,7 @@ async function main() {
       }
     });
 
-    // ✅ PUT - Actualizar documento por ID
+    // PUT - Actualizar documento por ID
     app.put('/datos', async (req, res) => {
       try {
         const nombreColeccion = req.query.coleccion;
@@ -71,8 +77,10 @@ async function main() {
         }
 
         const coleccion = db.collection(nombreColeccion);
+        const objectId = new ObjectId(id); // Convertir id string a ObjectId
+
         const resultado = await coleccion.updateOne(
-          { _id: new ObjectId(id) },
+          { _id: objectId },
           { $set: req.body }
         );
 
@@ -83,7 +91,7 @@ async function main() {
       }
     });
 
-    // ✅ DELETE - Eliminar documento por ID
+    // DELETE - Eliminar documento por ID
     app.delete('/datos', async (req, res) => {
       try {
         const nombreColeccion = req.query.coleccion;
@@ -94,7 +102,9 @@ async function main() {
         }
 
         const coleccion = db.collection(nombreColeccion);
-        const resultado = await coleccion.deleteOne({ _id: new ObjectId(id) });
+        const objectId = new ObjectId(id); // Convertir id string a ObjectId
+
+        const resultado = await coleccion.deleteOne({ _id: objectId });
 
         res.json({ mensaje: 'Documento eliminado', eliminado: resultado.deletedCount });
       } catch (error) {
