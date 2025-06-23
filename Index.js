@@ -86,6 +86,32 @@ async function main() {
       }
     });
 
+        // POST - Login por correo y contraseña
+    app.post('/login', async (req, res) => {
+      try {
+        const { correo, password } = req.body;
+
+        if (!correo || !password) {
+          return res.status(400).json({ error: 'Correo y contraseña requeridos' });
+        }
+
+        const coleccion = db.collection('users');
+        const usuario = await coleccion.findOne({ correo, password });
+
+        if (!usuario) {
+          return res.status(401).json({ error: 'Credenciales incorrectas' });
+        }
+
+        delete usuario.password; // Evita devolver el password
+
+        res.json({ mensaje: 'Login exitoso', usuario });
+      } catch (error) {
+        console.error('❌ Error en login:', error);
+        res.status(500).json({ error: 'Error interno del servidor' });
+      }
+    });
+
+
     app.listen(PORT, '0.0.0.0', () => {
       console.log(`🚀 Servidor corriendo en http://0.0.0.0:${PORT}`);
     });
@@ -94,5 +120,7 @@ async function main() {
     process.exit(1);
   }
 }
+
+
 
 main();
