@@ -1,6 +1,10 @@
+// server.js
 import express from 'express';
 import cors from 'cors';
-import { MongoClient, ObjectId } from 'mongodb';
+import { MongoClient } from 'mongodb';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -42,7 +46,7 @@ async function main() {
       }
     });
 
-    // PUT - Actualizar documento por ID (ID como ObjectId)
+    // PUT - Actualizar documento por ID
     app.put('/datos', async (req, res) => {
       try {
         const nombreColeccion = req.query.coleccion;
@@ -53,10 +57,8 @@ async function main() {
         }
 
         const coleccion = db.collection(nombreColeccion);
-        const objectId = new ObjectId(id);
-
         const resultado = await coleccion.updateOne(
-          { _id: objectId },
+          { _id: id },
           { $set: req.body }
         );
 
@@ -67,7 +69,7 @@ async function main() {
       }
     });
 
-    // DELETE - Eliminar documento por ID (ID como ObjectId)
+    // DELETE - Eliminar documento por ID
     app.delete('/datos', async (req, res) => {
       try {
         const nombreColeccion = req.query.coleccion;
@@ -78,9 +80,7 @@ async function main() {
         }
 
         const coleccion = db.collection(nombreColeccion);
-        const objectId = new ObjectId(id);
-
-        const resultado = await coleccion.deleteOne({ _id: objectId });
+        const resultado = await coleccion.deleteOne({ _id: id });
 
         res.json({ mensaje: 'Documento eliminado', eliminado: resultado.deletedCount });
       } catch (error) {
@@ -89,6 +89,48 @@ async function main() {
       }
     });
 
+    // POST - Login de usuario
+    app.post('/login', async (req, res) => {
+      try {
+        const { email, password } = req.body;
+
+        if (!email || !password) {
+          return res.status(400).json({ success: false, message: 'Faltan campos' });
+        }
+
+        const coleccion = db.collection('users');
+
+        const usuario = await coleccion.findOne({
+          correo: email,
+          password: password,
+        });
+
+        if (!usuario) {
+          return res.status(401).json({
+            success: false,
+            message: 'Correo o contraseña incorrectos',
+          });
+        }
+
+        res.json({
+          success: true,
+          message: 'Inicio de sesión exitoso',
+          usuario: {
+            id: usuario._id,
+            nombre: usuario.nombre,
+            apellido: usuario.apellido,
+            correo: usuario.correo,
+            telefono: usuario.telefono,
+            direccion: usuario.direccion,
+          },
+        });
+      } catch (error) {
+        console.error('❌ Error en login:', error);
+        res.status(500).json({ success: false, message: 'Error interno del servidor' });
+      }
+    });
+
+    // Arranca servidor
     app.listen(PORT, '0.0.0.0', () => {
       console.log(`🚀 Servidor corriendo en http://0.0.0.0:${PORT}`);
     });
