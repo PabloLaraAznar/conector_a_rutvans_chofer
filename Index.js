@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import { MongoClient } from 'mongodb';
+import { MongoClient, ObjectId } from 'mongodb';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -42,7 +42,7 @@ async function main() {
       }
     });
 
-    // PUT - Actualizar documento por ID (ID como string)
+    // PUT - Actualizar documento por ID (ID como ObjectId)
     app.put('/datos', async (req, res) => {
       try {
         const nombreColeccion = req.query.coleccion;
@@ -53,8 +53,10 @@ async function main() {
         }
 
         const coleccion = db.collection(nombreColeccion);
+        const objectId = new ObjectId(id);
+
         const resultado = await coleccion.updateOne(
-          { _id: id },
+          { _id: objectId },
           { $set: req.body }
         );
 
@@ -65,7 +67,7 @@ async function main() {
       }
     });
 
-    // DELETE - Eliminar documento por ID (ID como string)
+    // DELETE - Eliminar documento por ID (ID como ObjectId)
     app.delete('/datos', async (req, res) => {
       try {
         const nombreColeccion = req.query.coleccion;
@@ -76,7 +78,9 @@ async function main() {
         }
 
         const coleccion = db.collection(nombreColeccion);
-        const resultado = await coleccion.deleteOne({ _id: id });
+        const objectId = new ObjectId(id);
+
+        const resultado = await coleccion.deleteOne({ _id: objectId });
 
         res.json({ mensaje: 'Documento eliminado', eliminado: resultado.deletedCount });
       } catch (error) {
