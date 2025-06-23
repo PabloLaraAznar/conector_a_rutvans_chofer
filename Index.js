@@ -87,12 +87,12 @@ async function main() {
     });
 
         // POST - Login por email y contraseña
-    app.post('/login', async (req, res) => {
+app.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ error: 'email y contraseña requeridos' });
+      return res.status(400).json({ success: false, error: 'email y contraseña requeridos' });
     }
 
     console.log('➡️ Cuerpo recibido en /login:', req.body);
@@ -103,23 +103,23 @@ async function main() {
 
     if (!usuario) {
       console.log('❌ Usuario no encontrado con email:', email);
-      return res.status(401).json({ error: 'Usuario no encontrado' });
+      return res.status(401).json({ success: false, error: 'Usuario no encontrado' });
     }
 
     console.log('Usuario encontrado:', usuario);
 
     if (usuario.password !== password) {
       console.log('❌ Contraseña incorrecta para email:', email);
-      return res.status(401).json({ error: 'Contraseña incorrecta' });
+      return res.status(401).json({ success: false, error: 'Contraseña incorrecta' });
     }
 
     const usuarioSinPass = { ...usuario };
     delete usuarioSinPass.password;
 
-    res.json({ mensaje: 'Login exitoso', usuario: usuarioSinPass });
+    res.json({ success: true, mensaje: 'Login exitoso', usuario: usuarioSinPass });
   } catch (error) {
     console.error('❌ Error en login:', error);
-    res.status(500).json({ error: 'Error interno del servidor' });
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
 
