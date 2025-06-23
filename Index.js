@@ -95,6 +95,8 @@ async function main() {
           return res.status(400).json({ error: 'Correo y contraseña requeridos' });
         }
 
+        console.log('➡️ Cuerpo recibido en /login:', req.body);
+
         const coleccion = db.collection('users');
         const usuario = await coleccion.findOne({ correo, password });
 
