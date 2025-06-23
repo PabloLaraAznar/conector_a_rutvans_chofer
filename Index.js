@@ -1,20 +1,17 @@
-// server.js
 import express from 'express';
 import cors from 'cors';
 import { MongoClient } from 'mongodb';
-import dotenv from 'dotenv';
-
-dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json()); // Para leer JSON en POST/PUT
 
-const uri = process.env.MONGO_URI;
+// 🔴 Pega aquí tu URI real de MongoDB Atlas o local
+const uri = 'mongodb+srv://pablolara:PeUlKWpeOYXeJTmT@prueba1.puvcqaj.mongodb.net/';
 
 if (!uri) {
-  console.error('❌ No se encontró la variable de entorno MONGO_URI');
+  console.error('❌ No se proporcionó URI de MongoDB');
   process.exit(1);
 }
 
@@ -89,48 +86,6 @@ async function main() {
       }
     });
 
-    // POST - Login de usuario
-    app.post('/login', async (req, res) => {
-      try {
-        const { email, password } = req.body;
-
-        if (!email || !password) {
-          return res.status(400).json({ success: false, message: 'Faltan campos' });
-        }
-
-        const coleccion = db.collection('users');
-
-        const usuario = await coleccion.findOne({
-          correo: email,
-          password: password,
-        });
-
-        if (!usuario) {
-          return res.status(401).json({
-            success: false,
-            message: 'Correo o contraseña incorrectos',
-          });
-        }
-
-        res.json({
-          success: true,
-          message: 'Inicio de sesión exitoso',
-          usuario: {
-            id: usuario._id,
-            nombre: usuario.nombre,
-            apellido: usuario.apellido,
-            correo: usuario.correo,
-            telefono: usuario.telefono,
-            direccion: usuario.direccion,
-          },
-        });
-      } catch (error) {
-        console.error('❌ Error en login:', error);
-        res.status(500).json({ success: false, message: 'Error interno del servidor' });
-      }
-    });
-
-    // Arranca servidor
     app.listen(PORT, '0.0.0.0', () => {
       console.log(`🚀 Servidor corriendo en http://0.0.0.0:${PORT}`);
     });
