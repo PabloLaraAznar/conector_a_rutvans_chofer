@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import { MongoClient, ObjectId } from 'mongodb';
+import { MongoClient } from 'mongodb';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -42,16 +42,11 @@ async function main() {
       }
     });
 
-    // PUT - Actualizar documento por ID
+    // PUT - Actualizar documento por ID (ID como string)
     app.put('/datos', async (req, res) => {
       try {
         const nombreColeccion = req.query.coleccion;
         const id = req.query.id;
-
-        console.log('PUT /datos recibido:');
-        console.log('Colección:', nombreColeccion);
-        console.log('ID:', id);
-        console.log('Datos recibidos:', req.body);
 
         if (!nombreColeccion || !id) {
           return res.status(400).json({ error: 'Faltan parámetros "coleccion" o "id"' });
@@ -59,15 +54,9 @@ async function main() {
 
         const coleccion = db.collection(nombreColeccion);
         const resultado = await coleccion.updateOne(
-          { _id: new ObjectId(id) },
+          { _id: id },
           { $set: req.body }
         );
-
-        console.log('Resultado actualización:', resultado);
-
-        if (resultado.matchedCount === 0) {
-          return res.status(404).json({ error: 'Documento no encontrado para actualizar' });
-        }
 
         res.json({ mensaje: 'Documento actualizado', modificado: resultado.modifiedCount });
       } catch (error) {
@@ -76,7 +65,7 @@ async function main() {
       }
     });
 
-    // DELETE - Eliminar documento por ID
+    // DELETE - Eliminar documento por ID (ID como string)
     app.delete('/datos', async (req, res) => {
       try {
         const nombreColeccion = req.query.coleccion;
@@ -87,7 +76,7 @@ async function main() {
         }
 
         const coleccion = db.collection(nombreColeccion);
-        const resultado = await coleccion.deleteOne({ _id: new ObjectId(id) });
+        const resultado = await coleccion.deleteOne({ _id: id });
 
         res.json({ mensaje: 'Documento eliminado', eliminado: resultado.deletedCount });
       } catch (error) {
