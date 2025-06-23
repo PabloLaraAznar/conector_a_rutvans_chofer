@@ -88,30 +88,40 @@ async function main() {
 
         // POST - Login por email y contraseña
     app.post('/login', async (req, res) => {
-      try {
-        const { email, password } = req.body;
+  try {
+    const { email, password } = req.body;
 
-        if (!email || !password) {
-          return res.status(400).json({ error: 'email y contraseña requeridos' });
-        }
+    if (!email || !password) {
+      return res.status(400).json({ error: 'email y contraseña requeridos' });
+    }
 
-        console.log('➡️ Cuerpo recibido en /login:', req.body);
+    console.log('➡️ Cuerpo recibido en /login:', req.body);
 
-        const coleccion = db.collection('users');
-        const usuario = await coleccion.findOne({ email, password });
+    const coleccion = db.collection('users');
 
-        if (!usuario) {
-          return res.status(401).json({ error: 'Credenciales incorrectas' });
-        }
+    const usuario = await coleccion.findOne({ email });
 
-        delete usuario.password; // Evita devolver el password
+    if (!usuario) {
+      console.log('❌ Usuario no encontrado con email:', email);
+      return res.status(401).json({ error: 'Usuario no encontrado' });
+    }
 
-        res.json({ mensaje: 'Login exitoso', usuario });
-      } catch (error) {
-        console.error('❌ Error en login:', error);
-        res.status(500).json({ error: 'Error interno del servidor' });
-      }
-    });
+    console.log('Usuario encontrado:', usuario);
+
+    if (usuario.password !== password) {
+      console.log('❌ Contraseña incorrecta para email:', email);
+      return res.status(401).json({ error: 'Contraseña incorrecta' });
+    }
+
+    const usuarioSinPass = { ...usuario };
+    delete usuarioSinPass.password;
+
+    res.json({ mensaje: 'Login exitoso', usuario: usuarioSinPass });
+  } catch (error) {
+    console.error('❌ Error en login:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
 
 
     app.listen(PORT, '0.0.0.0', () => {
