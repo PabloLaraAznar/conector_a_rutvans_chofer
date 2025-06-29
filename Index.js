@@ -10,11 +10,16 @@ app.use(express.json()); // Para leer JSON en POST/PUT
 
 // 🔵 Conexión a MySQL
 const pool = mysql.createPool({
-  host: 'localhost',       // Cambia esto según tu servidor
-  user: 'usuario',         // Tu usuario MySQL
-  password: 'contraseña',  // Tu contraseña
-  database: 'rutvans_chofer',
+  host: 'turntable.proxy.rlwy.net',
+  port: 27849,
+  user: 'root',
+  password: 'YlIWgAhGUjZrQtSMfqYvzZTHJKYShbRS',
+  database: 'railway',
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0,
 });
+
 
 // 🔴 MongoDB (comentado)
 /*
