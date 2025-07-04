@@ -69,6 +69,38 @@ app.get('/datos', async (req, res) => {
   }
 });
 
+// POST - Crear nuevo registro
+app.post('/datos', async (req, res) => {
+  try {
+    const tabla = req.query.coleccion;
+    if (!tabla) {
+      return res.status(400).json({ error: 'Falta el parámetro "coleccion"' });
+    }
+
+    const datos = req.body;
+
+    if (!datos || Object.keys(datos).length === 0) {
+      return res.status(400).json({ error: 'No se enviaron datos para insertar' });
+    }
+
+    const campos = Object.keys(datos).join(', ');
+    const valores = Object.values(datos);
+    const placeholders = valores.map(() => '?').join(', ');
+
+    const [resultado] = await pool.query(
+      `INSERT INTO ${tabla} (${campos}) VALUES (${placeholders})`,
+      valores
+    );
+
+    res.status(201).json({ mensaje: 'Registro insertado', id: resultado.insertId });
+  } catch (error) {
+    console.error('❌ Error al insertar datos:', error);
+    res.status(500).json({ error: 'Error al insertar datos' });
+  }
+});
+
+
+
 // PUT - Actualizar
 app.put('/datos', async (req, res) => {
   try {
