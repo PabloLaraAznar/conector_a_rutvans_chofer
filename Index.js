@@ -46,9 +46,11 @@ const pool = mysql.createPool({
 
 // GET - Obtener datos
 app.get('/datos', async (req, res) => {
+  console.log('GET /datos - Query params:', req.query);
   try {
     const tabla = req.query.coleccion;
     if (!tabla) {
+      console.log('Falta el parámetro "coleccion"');
       return res.status(400).json({ error: 'Falta el parámetro "coleccion"' });
     }
 
@@ -62,6 +64,7 @@ app.get('/datos', async (req, res) => {
     }
 
     const [rows] = await pool.query(`SELECT * FROM ${tabla} WHERE ${filtro}`);
+    console.log(`Registros obtenidos de ${tabla}:`, rows.length);
     res.json(rows);
   } catch (error) {
     console.error('❌ Error al obtener datos:', error);
@@ -71,15 +74,19 @@ app.get('/datos', async (req, res) => {
 
 // POST - Crear nuevo registro
 app.post('/datos', async (req, res) => {
+  console.log('POST /datos - Query params:', req.query);
+  console.log('POST /datos - Body:', req.body);
   try {
     const tabla = req.query.coleccion;
     if (!tabla) {
+      console.log('Falta el parámetro "coleccion"');
       return res.status(400).json({ error: 'Falta el parámetro "coleccion"' });
     }
 
     const datos = req.body;
 
     if (!datos || Object.keys(datos).length === 0) {
+      console.log('No se enviaron datos para insertar');
       return res.status(400).json({ error: 'No se enviaron datos para insertar' });
     }
 
@@ -92,6 +99,7 @@ app.post('/datos', async (req, res) => {
       valores
     );
 
+    console.log('Registro insertado con ID:', resultado.insertId);
     res.status(201).json({ mensaje: 'Registro insertado', id: resultado.insertId });
   } catch (error) {
     console.error('❌ Error al insertar datos:', error);
@@ -99,15 +107,16 @@ app.post('/datos', async (req, res) => {
   }
 });
 
-
-
 // PUT - Actualizar
 app.put('/datos', async (req, res) => {
+  console.log('PUT /datos - Query params:', req.query);
+  console.log('PUT /datos - Body:', req.body);
   try {
     const tabla = req.query.coleccion;
     const id = req.query.id;
 
     if (!tabla || !id) {
+      console.log('Faltan parámetros "coleccion" o "id"');
       return res.status(400).json({ error: 'Faltan parámetros "coleccion" o "id"' });
     }
 
@@ -120,6 +129,7 @@ app.put('/datos', async (req, res) => {
       [id]
     );
 
+    console.log(`Documento actualizado, filas modificadas: ${resultado.affectedRows}`);
     res.json({ mensaje: 'Documento actualizado', modificado: resultado.affectedRows });
   } catch (error) {
     console.error('❌ Error al actualizar:', error);
@@ -129,15 +139,18 @@ app.put('/datos', async (req, res) => {
 
 // DELETE - Eliminar
 app.delete('/datos', async (req, res) => {
+  console.log('DELETE /datos - Query params:', req.query);
   try {
     const tabla = req.query.coleccion;
     const id = req.query.id;
 
     if (!tabla || !id) {
+      console.log('Faltan parámetros "coleccion" o "id"');
       return res.status(400).json({ error: 'Faltan parámetros "coleccion" o "id"' });
     }
 
     const [resultado] = await pool.query(`DELETE FROM ${tabla} WHERE id = ?`, [id]);
+    console.log(`Documento eliminado, filas afectadas: ${resultado.affectedRows}`);
     res.json({ mensaje: 'Documento eliminado', eliminado: resultado.affectedRows });
   } catch (error) {
     console.error('❌ Error al eliminar:', error);
@@ -147,14 +160,14 @@ app.delete('/datos', async (req, res) => {
 
 // POST - Login
 app.post('/login', async (req, res) => {
+  console.log('POST /login - Body:', req.body);
   try {
     const { email, password } = req.body;
 
     if (!email || !password) {
+      console.log('email y contraseña requeridos');
       return res.status(400).json({ success: false, error: 'email y contraseña requeridos' });
     }
-
-    console.log('➡️ Cuerpo recibido en /login:', req.body);
 
     const [usuarios] = await pool.query(
       'SELECT * FROM users WHERE email = ?',
@@ -164,12 +177,12 @@ app.post('/login', async (req, res) => {
     const usuario = usuarios[0];
 
     if (!usuario) {
-      console.log('❌ Usuario no encontrado con email:', email);
+      console.log('Usuario no encontrado con email:', email);
       return res.status(401).json({ success: false, error: 'Usuario no encontrado' });
     }
 
     if (usuario.password !== password) {
-      console.log('❌ Contraseña incorrecta para email:', email);
+      console.log('Contraseña incorrecta para email:', email);
       return res.status(401).json({ success: false, error: 'Contraseña incorrecta' });
     }
 
