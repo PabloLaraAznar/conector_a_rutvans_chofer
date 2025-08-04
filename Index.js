@@ -32,11 +32,11 @@ app.use((req, res, next) => {
 
 // 🔵 Conexión a MySQL
 const pool = mysql.createPool({
-  host: 'turntable.proxy.rlwy.net',
+  host: 'mysql.hostinger.com',
   port: 27849,
   user: 'root',
-  password: 'YlIWgAhGUjZrQtSMfqYvzZTHJKYShbRS',
-  database: 'railway',
+  password: 'D4rk3st3r*0',
+  database: 'u726126735_rutvans_chofer',
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
