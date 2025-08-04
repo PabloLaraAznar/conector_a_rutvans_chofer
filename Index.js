@@ -34,7 +34,7 @@ app.use((req, res, next) => {
 const pool = mysql.createPool({
   host: 'mysql.hostinger.com',
   port: 27849,
-  user: 'rutvans',
+  user: 'u726126735_rutvans',
   password: 'D4rk3st3r*0',
   database: 'u726126735_rutvans_chofer',
   waitForConnections: true,
