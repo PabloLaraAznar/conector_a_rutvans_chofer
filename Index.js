@@ -43,7 +43,6 @@ const pool = mysql.createPool({
 });
 
 // Rutas
-
 // GET - Obtener datos
 app.get('/datos', async (req, res) => {
   console.log('GET /datos - Query params:', req.query);
@@ -63,7 +62,10 @@ app.get('/datos', async (req, res) => {
       filtro = condiciones.join(' AND ');
     }
 
-    const [rows] = await pool.query(`SELECT * FROM ${tabla} WHERE ${filtro}`);
+    const query = `SELECT * FROM ${tabla} WHERE ${filtro}`;
+    console.log('Consulta SQL ejecutada:', query); // Log de la consulta SQL
+    
+    const [rows] = await pool.query(query);
     console.log(`Registros obtenidos de ${tabla}:`, rows.length);
     res.json(rows);
   } catch (error) {
@@ -94,11 +96,11 @@ app.post('/datos', async (req, res) => {
     const valores = Object.values(datos);
     const placeholders = valores.map(() => '?').join(', ');
 
-    const [resultado] = await pool.query(
-      `INSERT INTO ${tabla} (${campos}) VALUES (${placeholders})`,
-      valores
-    );
+    const query = `INSERT INTO ${tabla} (${campos}) VALUES (${placeholders})`;
+    console.log('Consulta SQL ejecutada:', query); // Log de la consulta SQL
+    console.log('Valores:', valores); // Log de los valores
 
+    const [resultado] = await pool.query(query, valores);
     console.log('Registro insertado con ID:', resultado.insertId);
     res.status(201).json({ mensaje: 'Registro insertado', id: resultado.insertId });
   } catch (error) {
@@ -124,11 +126,11 @@ app.put('/datos', async (req, res) => {
       .map(([key, val]) => `${key} = ${mysql.escape(val)}`)
       .join(', ');
 
-    const [resultado] = await pool.query(
-      `UPDATE ${tabla} SET ${campos} WHERE id = ?`,
-      [id]
-    );
+    const query = `UPDATE ${tabla} SET ${campos} WHERE id = ?`;
+    console.log('Consulta SQL ejecutada:', query); // Log de la consulta SQL
+    console.log('ID:', id); // Log del ID
 
+    const [resultado] = await pool.query(query, [id]);
     console.log(`Documento actualizado, filas modificadas: ${resultado.affectedRows}`);
     res.json({ mensaje: 'Documento actualizado', modificado: resultado.affectedRows });
   } catch (error) {
@@ -149,7 +151,11 @@ app.delete('/datos', async (req, res) => {
       return res.status(400).json({ error: 'Faltan parámetros "coleccion" o "id"' });
     }
 
-    const [resultado] = await pool.query(`DELETE FROM ${tabla} WHERE id = ?`, [id]);
+    const query = `DELETE FROM ${tabla} WHERE id = ?`;
+    console.log('Consulta SQL ejecutada:', query); // Log de la consulta SQL
+    console.log('ID:', id); // Log del ID
+
+    const [resultado] = await pool.query(query, [id]);
     console.log(`Documento eliminado, filas afectadas: ${resultado.affectedRows}`);
     res.json({ mensaje: 'Documento eliminado', eliminado: resultado.affectedRows });
   } catch (error) {
